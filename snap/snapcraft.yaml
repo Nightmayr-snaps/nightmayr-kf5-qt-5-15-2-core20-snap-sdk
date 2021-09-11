@@ -1,0 +1,2935 @@
+---
+name: nightmayr-kf5-qt-5-15-2-core20-sdk
+version: 5.85.0
+base: core20
+summary: Shared Qt 5.15 and KF5
+description: |
+ This snap contains the necessary libraries required by
+ Qt Applications.
+confinement: strict
+grade: stable
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+  - build-on: armhf
+  - build-on: ppc64el
+parts:
+    patches:
+        plugin: dump
+        source: snap/local/patches
+        source-type: local
+        prime:
+        - -*
+    mesa:
+        after: []
+        plugin: nil
+        build-attributes:
+        - no-patchelf
+        build-packages: []
+        stage-packages:
+        - libgl1-mesa-dri
+        - libglx-mesa0
+        prime:
+        - "-lib/udev"
+        - "-usr/doc"
+        - "-usr/doc-base"
+        - "-usr/share/applications"
+        - "-usr/share/apport"
+        - "-usr/share/bug"
+        - "-usr/share/doc"
+        - "-usr/share/doc-base"
+        - "-usr/share/icons"
+        - "-usr/share/libdrm"
+        - "-usr/share/libwacom"
+        - "-usr/share/lintian"
+        - "-usr/share/man"
+        - "-usr/share/pkgconfig"
+    qtbase:
+        plugin: nil
+        override-pull: |
+            QT=5_15_2
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qt5.git .
+            perl init-repository --module-subset=qtbase
+            git submodule update qtbase
+
+            cd qtbase
+            find $SNAPCRAFT_STAGE/qtbase_${QT} -type f -print0 | sort -z | xargs -r0 git apply
+        override-build: |
+            ./configure \
+                -prefix /usr \
+                -bindir /usr/lib/qt5/bin \
+                -libdir /usr/lib/$SNAPCRAFT_ARCH_TRIPLET \
+                -docdir /usr/share/qt5/doc \
+                -headerdir /usr/include/$SNAPCRAFT_ARCH_TRIPLET/qt5 \
+                -datadir /usr/share/qt5 \
+                -archdatadir /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5 \
+                -plugindir /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/plugins \
+                -importdir /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/imports \
+                -translationdir /usr/share/qt5/translations \
+                -hostdatadir /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5 \
+                -sysconfdir /etc/xdg \
+                -examplesdir /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/examples \
+                -release \
+                -opensource \
+                -confirm-license \
+                -nomake examples \
+                -nomake tests \
+                -I $SNAPCRAFT_STAGE/usr/include \
+                -L $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
+
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL" install
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtbase/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtbase/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtbase/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtbase/src/.git
+        build-packages:
+        - build-essential
+        - autotools-dev
+        - binutils-gold
+        - bison
+        - cdbs
+        - cmake
+        - flex
+        - flite1-dev
+        - freetds-dev
+        - git
+        - gnome-keyring
+        - gperf
+        - libasound2-dev
+        - libatspi2.0-dev
+        - libaudio-dev
+        - libavcodec-dev
+        - libavformat-dev
+        - libavutil-dev
+        - libbluetooth-dev
+        - libc6
+        - libcap-dev
+        - libclang-6.0-dev
+        - libcups2-dev
+        - libdbus-1-3
+        - libdbus-1-dev
+        - libedit-dev
+        - libegl1-mesa-dev
+        - libevent-dev
+        - libflac++-dev
+        - libfontconfig1-dev
+        - libfreetype6-dev
+        - libgcc1
+        - libgconf2-dev
+        - libgcrypt20-dev
+        - libgeoclue-2-dev
+        - libgl1-mesa-dev
+        - libglib2.0-0
+        - libglib2.0-dev
+        - libglu1-mesa-dev
+        - libgstreamer1.0-dev
+        - libgstreamer-plugins-base1.0-dev
+        - libgtk2.0-dev
+        - libgtk-3-dev
+        - libharfbuzz-dev
+        - libhunspell-dev
+        - libice-dev
+        - libicu-dev
+        - libjpeg-dev
+        - libjsoncpp-dev
+        - libmng-dev
+        - libmtdev-dev
+        - libmysqlclient-dev
+        - libnss3-dev
+        - libopenal-dev
+        - libopus-dev
+        - libpci-dev
+        - libpng-dev
+        - libpq-dev
+        - libproxy-dev
+        - libpulse-dev
+        - libsdl2-dev
+        - libsm-dev
+        - libsnappy-dev
+        - libsocketcan-dev
+        - libspeex-dev
+        - libsqlite3-0
+        - libsqlite3-dev
+        - libsrtp2-dev
+        - libssl-dev
+        - libstdc++6
+        - libtiff5-dev
+        - libudev-dev
+        - libvpx-dev
+        - libvulkan-dev
+        - libwayland-dev
+        - libwayland-egl1-mesa
+        - libwebp-dev
+        - libx11-dev
+        - libx11-xcb1
+        - libx11-xcb-dev
+        - libxcb1
+        - libxcb1-dev
+        - libxcb-dri3-dev
+        - libxcb-glx0-dev
+        - libxcb-icccm4
+        - libxcb-icccm4-dev
+        - libxcb-image0
+        - libxcb-image0-dev
+        - libxcb-keysyms1
+        - libxcb-keysyms1-dev
+        - libxcb-randr0-dev
+        - libxcb-render0-dev
+        - libxcb-render-util0-dev
+        - libxcb-shape0-dev
+        - libxcb-shm0-dev
+        - libxcb-sync0-dev
+        - libxcb-sync-dev
+        - libxcb-util-dev
+        - libxcb-xfixes0-dev
+        - libxcb-xinerama0-dev
+        - libxcb-xinput-dev
+        - libxcomposite-dev
+        - libxcursor-dev
+        - libxext-dev
+        - libxft-dev
+        - libxi-dev
+        - libxinerama-dev
+        - libxkbcommon-dev
+        - libxkbcommon-x11-dev
+        - libxkbfile-dev
+        - libxml2
+        - libxml2-dev
+        - libxmu-dev
+        - libxrandr-dev
+        - libxrender-dev
+        - libxslt1-dev
+        - libxss-dev
+        - libxt-dev
+        - libxtst-dev
+        - libxv-dev
+        - llvm-6.0
+        - mesa-common-dev
+        - ninja-build
+        - pkg-config
+        - python2
+        - python3
+        - quilt
+        - re2c
+        - ruby
+        - unixodbc-dev
+        - zlib1g-dev
+        stage-packages:
+        - libdbus-1-3
+        - libegl1
+        - libfontconfig1
+        - libfreetype6
+        - libgl1
+        - libglib2.0-0
+        - libgtk-3-0
+        - libharfbuzz0b
+        - libicu66
+        - libpcre2-16-0
+        - libpng16-16
+        - libssl1.1
+        - libwayland-client0
+        - libwayland-cursor0
+        - libwayland-egl1
+        - libx11-6
+        - libx11-xcb1
+        - libxcb1
+        - libxcb-glx0
+        - libxcb-icccm4
+        - libxcb-image0
+        - libxcb-keysyms1
+        - libxcb-randr0
+        - libxcb-render0
+        - libxcb-render-util0
+        - libxcb-shape0
+        - libxcb-shm0
+        - libxcb-sync1
+        - libxcb-util1
+        - libxcb-xfixes0
+        - libxcb-xinerama0
+        - libxcb-xinput0
+        - libxcb-xkb1
+        - libxcursor1
+        - libxkbcommon0
+        - libxkbcommon-x11-0
+        - zlib1g
+        - libasound2
+        - libevent-2.1-7
+        - libice6
+        - libjpeg-turbo8
+        - libminizip1
+        - libnspr4
+        - libnss3
+        - libopus0
+        - libre2-5
+        - libsm6
+        - libsnappy1v5
+        - libvpx6
+        - libxss1
+        - libasn1-8-heimdal
+        - libgssapi3-heimdal
+        - libhcrypto4-heimdal
+        - libheimbase1-heimdal
+        - libheimntlm0-heimdal
+        - libhx509-5-heimdal
+        - libkrb5-26-heimdal
+        - libldap-2.4-2
+        - libltdl7
+        - libmtdev1
+        - libmysqlclient21
+        - libodbc1
+        - libpq5
+        - libroken18-heimdal
+        - libsasl2-2
+        - libsybdb5
+        - libwind0-heimdal
+        # qtgamepad
+        - libsdl2-2.0-0
+        # qtimageformats
+        - libmng2
+        - libwebpdemux2
+        - libwebpmux3
+        # qtmultimedia
+        - libasyncns0
+        - libflac8
+        - libgstreamer-gl1.0-0
+        - libgstreamer-plugins-base1.0-0
+        - libgstreamer1.0-0
+        - libgudev-1.0-0
+        - libogg0
+        - libopenal1
+        - liborc-0.4-0
+        - libpulse0
+        - libsndfile1
+        - libsndio7.0
+        - libvorbis0a
+        - libvorbisenc2
+        # qtspeech
+        - libflite1
+        # qtwebengine
+        - libxslt1.1
+        after:
+        - patches
+        - sources
+        - mesa
+    qtxmlpatterns:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtxmlpatterns/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtxmlpatterns/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtxmlpatterns/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtxmlpatterns/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtxmlpatterns/src/.git
+        after:
+        - qtbase   
+    qtx11extras:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtx11extras/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtx11extras/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtx11extras/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtx11extras/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtx11extras/src/.git
+        after:
+        - qtbase       
+    qtgamepad:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtgamepad/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtgamepad/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtgamepad/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtgamepad/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtgamepad/src/.git
+        after:
+        - qtbase
+    qtimageformats:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtimageformats/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtimageformats/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtimageformats/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtimageformats/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtimageformats/src/.git
+        after:
+        - qtbase
+    qtnetworkauth:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtnetworkauth/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtnetworkauth/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtnetworkauth/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtnetworkauth/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtnetworkauth/src/.git 
+        after:
+        - qtbase
+    qtserialport:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtserialport/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtserialport/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtserialport/src/*   
+        after:
+        - qtbase
+    qtremoteobjects:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtremoteobjects/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtremoteobjects/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtremoteobjects/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtremoteobjects/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtremoteobjects/src/.git
+        after:
+        - qtbase
+    qtsvg:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtsvg/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtsvg/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtsvg/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtsvg/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtsvg/src/.git
+        after:
+        - qtbase
+    qtscript:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtscript/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtscript/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtscript/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtscript/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtscript/src/.git
+        after:
+        - qtbase
+    qtdeclarative:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtdeclarative/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdeclarative/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdeclarative/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdeclarative/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdeclarative/src/.git
+        after:
+        - qtxmlpatterns
+    qtwayland:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtwayland/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwayland/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwayland/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwayland/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwayland/src/.git
+        after:
+        - qtdeclarative
+    qttools:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qttools/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qttools/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qttools/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qttools/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qttools/src/.git
+        after:
+        - qtdeclarative
+    qtconnectivity:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtconnectivity/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtconnectivity/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtconnectivity/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtconnectivity/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtconnectivity/src/.git
+        after:
+        - qtdeclarative
+    qtcharts:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtcharts/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtcharts/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtcharts/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtcharts/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtcharts/src/.git
+        after:
+        - qtdeclarative
+    qtdoc:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        - QT_INSTALL_DOCS: $SNAPCRAFT_PART_INSTALL/usr/share/qt5/doc
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtdoc/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            # $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -query
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT docs
+            # make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            # cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            # rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdoc/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdoc/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdoc/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdoc/src/.git
+        after:
+        - qtdeclarative
+    qtlottie:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtlottie/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtlottie/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtlottie/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtlottie/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtlottie/src/.git
+        after:
+        - qtdeclarative
+    qtgraphicaleffects:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtgraphicaleffects/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtgraphicaleffects/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtgraphicaleffects/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtgraphicaleffects/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtgraphicaleffects/src/.git
+        after:
+        - qtdeclarative
+    qtmultimedia:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtmultimedia/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtmultimedia/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtmultimedia/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtmultimedia/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtmultimedia/src/.git
+        after:
+        - qtdeclarative
+    qtquick3d:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtquick3d/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquick3d/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquick3d/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquick3d/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquick3d/src/.git
+        after:
+        - qtdeclarative
+    qtquickcontrols:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtquickcontrols/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquickcontrols/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquickcontrols/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquickkcontols/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquickkcontols/src/.git
+        after:
+        - qtdeclarative
+    qtscxml:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtscxml/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtscxml/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtscxml/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtscxml/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtscxml/src/.git
+        after:
+        - qtdeclarative
+    qtquicktimeline:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtquicktimeline/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquicktimeline/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquicktimeline/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquicktimeline/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquicktimeline/src/.git
+        after:
+        - qtdeclarative
+    qtsensors:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtsensors/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtsensors/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtsensors/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtsensors/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtsensors/src/.git
+        after:
+        - qtdeclarative
+    qtwebchannel:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtwebchannel/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebchannel/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebchannel/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebchannel/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebchannel/src/.git
+        after:
+        - qtdeclarative
+    qtwebsockets:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtwebsockets/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebsockets/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebsockets/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebsockets/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebsockets/src/.git
+        after:
+        - qtdeclarative
+    qt3d:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qt3d/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qt3d/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qt3d/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qt3d/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qt3d/src/.git
+        after:
+        - qtdeclarative
+        - qtimageformats
+    qtquickcontrols2:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtquickcontrols2/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquickconrols2/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquickconrols2/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquickconrols2/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtquickconrols2/src/.git
+        after:
+        - qtdeclarative
+        - qtquickcontrols
+    qtlocation:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtlocation/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtlocation/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtlocation/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtlocation/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtlocation/src/.git
+        after:
+        - qtquickcontrols
+        - qtserialport
+    qtdatavis3d:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtdatavis3d/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdatavis3d/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdatavis3d/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdatavis3d/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtdatavis3d/src/.git
+        after:
+        - qtmultimedia
+    qtspeech:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtspeech/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtspeech/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtspeech/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtspeech/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtspeech/src/.git
+        after:
+        - qtmultimedia
+    qtserialbus:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtserialbus/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtserialbus/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtserialbus/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtserialbus/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtserialbus/src/.git
+        after:
+        - qtserialport
+    qttranslations:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qttranslations/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qttranslations/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qttranslations/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qttranslations/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qttranslations/src/.git
+        after:
+        - qttools
+    qtwebglplugin:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtwebglplugin/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+            make -j$SNAPCRAFT_PARALLEL_BUILD_COUNT
+            make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+            cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+            rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebglplugin/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebglplugin/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebglplugin/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebglplugin/src/.git
+        after:
+        - qtwebsockets
+    qtwebengine:
+        plugin: nil
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtwebengine/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            if [ $SNAPCRAFT_TARGET_ARCH != "ppc64el" ]; then
+                # Setting number of build jobs to a safe number to prevent running out of memory during QtWebengine build
+                memtotal=$(cat /proc/meminfo | awk '{print $2}' | head -n1)
+                roundedmem=$(python3 -c "print(round($memtotal/1024000.0))")
+                maxcoresformem=$(python3 -c "print(max(1, int(($roundedmem / 2)-1)))")
+                numcoreslow=$(python3 -c "print(min($maxcoresformem, $SNAPCRAFT_PARALLEL_BUILD_COUNT))")
+                $SNAPCRAFT_STAGE/usr/lib/qt5/bin/qmake -qtconf "$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/qt.conf"
+                make -j$numcoreslow NINJAJOBS=-j$numcoreslow
+                make INSTALL_ROOT="$SNAPCRAFT_PART_INSTALL/tmp" install
+                cp -a "$SNAPCRAFT_PART_INSTALL/tmp$SNAPCRAFT_STAGE/." "$SNAPCRAFT_PART_INSTALL"
+                rm -r "$SNAPCRAFT_PART_INSTALL/tmp"
+            else
+                echo "QtWebengine can not be built for ppc64el, skipping"
+                exit 0
+            fi
+        override-stage: |
+            snapcraftctl stage
+            # Cleanup space on build VM to prevent running out of disk space for later parts
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebengine/build/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebengine/src/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebengine/build/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/qtwebengine/src/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/sources/build/qtwebengine/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/sources/src/qtwebengine/*
+            rm -rf $SNAPCRAFT_STAGE/../parts/sources/build/qtwebengine/.git
+            rm -rf $SNAPCRAFT_STAGE/../parts/sources/src/qtwebengine/.git
+        after:
+        - qtlocation
+        - qtwebchannel
+        - qtquickcontrols2
+        - qtsvg
+    #       
+    #     Qtwebkit fails with error:  
+    # 
+    #     error: redefinition of ‘class QWebChannelWebKitTransport’
+    #    48 | class QWebChannelWebKitTransport : public QWebChannelAbstractTransport {
+    #       |       ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    #    
+    # qtwebkit:
+    #     plugin: cmake
+    #     # source: git://code.qt.io/qt/qtwebkit.git
+    #     # source-tag: v5.212.0-alpha4
+    #     # source-branch: "5.212"
+    #     cmake-parameters: 
+    #     - -DCMAKE_BUILD_TYPE=Release
+    #     - -DCMAKE_INSTALL_PREFIX=/usr
+    #     - -DPORT=Qt
+    #     build-environment:
+    #     - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+    #     - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+    #     override-pull: |
+    #         cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qtwebkit/. $SNAPCRAFT_PART_SRC
+    #     override-stage: |
+    #         snapcraftctl stage
+    #         # Cleanup space on build VM to prevent running out of disk space for later parts
+    #         rm -rf $SNAPCRAFT_STAGE/../parts/qtwebkit/build/*
+    #         rm -rf $SNAPCRAFT_STAGE/../parts/qtwebkit/src/*
+    #         rm -rf $SNAPCRAFT_STAGE/../parts/qtwebkit/build/.git
+    #         rm -rf $SNAPCRAFT_STAGE/../parts/qtwebkit/src/.git
+    #     build-packages:
+    #     - flex
+    #     - libxcb-render0-dev
+    #     - libxcb-image0-dev
+    #     - libxcb-shape0-dev
+    #     - libxcb-sync-dev
+    #     - libxcb-render-util0-dev
+    #     - libxcb1-dev
+    #     - libxcb-xfixes0-dev
+    #     - libxcb-icccm4-dev
+    #     - libxcb-keysyms1-dev
+    #     - libxcb-shm0-dev
+    #     - libxrender-dev
+    #     - libpulse-dev
+    #     - libasound2-dev
+    #     - libaudio-dev
+    #     - libcups2-dev
+    #     - libdbus-1-dev
+    #     - libfreetype6-dev
+    #     - libgl1-mesa-dev
+    #     - libglib2.0-dev
+    #     - libegl1-mesa-dev
+    #     - libglu1-mesa-dev
+    #     - libice-dev
+    #     - libjpeg-dev
+    #     - libmng-dev
+    #     - libpng-dev
+    #     - libsm-dev
+    #     - libsqlite3-dev
+    #     - libssl-dev
+    #     - libtiff5-dev
+    #     - libx11-dev
+    #     - libxcursor-dev
+    #     - libxext-dev
+    #     - libxft-dev
+    #     - libxi-dev
+    #     - libxinerama-dev
+    #     - libxmu-dev
+    #     - libxrandr-dev
+    #     - libxt-dev
+    #     - libxv-dev
+    #     - zlib1g-dev
+    #     - libedit-dev
+    #     - libwayland-dev
+    #     - libwayland-egl1-mesa
+    #     - libmtdev-dev
+    #     - libudev-dev
+    #     - libxkbcommon-dev
+    #     - libxcomposite-dev
+    #     - libvulkan-dev
+    #     - python2
+    #     - libhyphen-dev
+    #     # - python3
+    #     stage-packages: []
+    #     prime:
+    #     - -./usr/include
+    #     - -./usr/lib/$SNAPCRAFT_ARCH_TRIPLET/cmake
+    #     - -./usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pkgconfig
+    #     - -./usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/bin
+    #     - -./usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/mkspecs
+    #     - -./usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt5/examples
+    #     - -./usr/lib/$SNAPCRAFT_ARCH_TRIPLET/*.la
+    #     - -./usr/lib/$SNAPCRAFT_ARCH_TRIPLET/*.prl
+    #     - -./usr/lib/qt5
+    #     after:
+    #     - qtwebengine
+
+    extra-cmake-modules:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/extra-cmake-modules/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - qtbase
+        - qtxmlpatterns
+        - qtx11extras
+        - qtgamepad
+        - qtimageformats
+        - qtnetworkauth
+        - qtserialport
+        - qtremoteobjects
+        - qtsvg
+        - qtscript
+        - qtdeclarative
+        - qtwayland
+        - qttools
+        - qtconnectivity
+        - qtcharts
+        - qtdoc
+        - qtlottie
+        - qtgraphicaleffects
+        - qtmultimedia
+        - qtquick3d
+        - qtquickcontrols
+        - qtscxml
+        - qtquicktimeline
+        - qtsensors
+        - qtwebchannel
+        - qtwebsockets
+        - qt3d
+        - qtquickcontrols2
+        - qtlocation
+        - qtdatavis3d
+        - qtspeech
+        - qtserialbus
+        - qttranslations
+        - qtwebglplugin
+        - qtwebengine
+    kcoreaddons:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kcoreaddons/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - extra-cmake-modules
+    ki18n:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/ki18n/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kcoreaddons
+    karchive:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/karchive/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - ki18n
+    kconfig:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kconfig/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - karchive
+    kdoctools:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdoctools/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kconfig
+    kwidgetsaddons:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kwidgetsaddons/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kdoctools
+    kcodecs:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kcodecs/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kwidgetsaddons
+    kwindowsystem:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kwindowsystem/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kcodecs
+    polkit-qt-1:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/polkit-qt-1/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        after:
+        - kwindowsystem
+    kauth:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kauth/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - polkit-qt-1
+    kcrash:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kcrash/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kauth
+    kdbusaddons:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdbusaddons/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kcrash
+    kguiaddons:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kguiaddons/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kdbusaddons
+    kconfigwidgets:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kconfigwidgets/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kguiaddons
+    kitemviews:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kitemviews/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kconfigwidgets
+    kiconthemes:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kiconthemes/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kitemviews
+    kcompletion:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kcompletion/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kiconthemes
+    kservice:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kservice/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kcompletion
+    sonnet:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/sonnet/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kservice
+    attica:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/attica/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - sonnet
+    phonon:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/phonon/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - attica
+    breeze-icons:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/breeze-icons/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - phonon
+    kglobalaccel:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kglobalaccel/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - breeze-icons
+    ktextwidgets:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/ktextwidgets/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kglobalaccel
+    knotifications:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/knotifications/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - ktextwidgets
+    kxmlgui:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kxmlgui/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - knotifications
+    kbookmarks:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kbookmarks/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kxmlgui
+    kjobwidgets:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kjobwidgets/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kbookmarks
+    kwallet:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kwallet/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kjobwidgets
+    solid:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/solid/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kwallet
+    kio:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kio/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - solid
+    kparts:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kparts/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+            # Copy kservicetypes5/kpart.desktop to /root/.local/share to be parseable by ktexteditor cmake build stage
+            mkdir -p $HOME/.local/share && cp -a $SNAPCRAFT_PART_INSTALL/usr/share/kservicetypes5 $HOME/.local/share
+        after:
+        - kio
+    taglib:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        - -DBUILD_SHARED_LIBS=TRUE
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/taglib/. $SNAPCRAFT_PART_SRC
+        after:
+        - kparts
+    kirigami:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kirigami/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - taglib
+    kpackage:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kpackage/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kirigami
+    kinit:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kinit/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kpackage
+    kactivities:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kactivities/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kinit
+    plasma-wayland-protocols:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/plasma-wayland-protocols/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kactivities
+    kdeclarative:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdeclarative/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - plasma-wayland-protocols
+    kidletime:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kidletime/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kdeclarative
+    kunitconversion:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kunitconversion/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kidletime
+    oxygen-icons5:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/oxygen-icons5/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kunitconversion
+    syntax-highlighting:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/syntax-highlighting/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - oxygen-icons5
+    kdnssd:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdnssd/. $SNAPCRAFT_PART_SRC
+        after:
+        - syntax-highlighting
+    kitemmodels:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kitemmodels/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kdnssd
+    kross:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kross/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kitemmodels
+    kjs:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kjs/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kross
+    ktexteditor:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/ktexteditor/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G 'Ninja' -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        override-stage: |
+            snapcraftctl stage
+            # ktexteditor build installs usr/share/polkit-1/actions/org.kde.ktexteditor.katetextbuffer.policy to kauth PART_INSTALL directory
+            # this cause priming kauth to fail due to a mismatch between STAGE and PART_INSTALL, hence copying the polkit directory to STAGE to resolve
+            cp -a $SNAPCRAFT_STAGE/../parts/kauth/install/usr/share/polkit-1 $SNAPCRAFT_STAGE/usr/share
+        after:
+        - kjs
+    kwayland:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kwayland/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - ktexteditor
+    syndication:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/syndication/. $SNAPCRAFT_PART_SRC
+        after:
+        - kwayland
+    threadweaver:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/threadweaver/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - syndication
+    kded:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kded/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+            # Copy kservicetypes5/kdedmodule.desktop to /root/.local/share to be parseable by kdelibs4support cmake build stage
+            cp -a $SNAPCRAFT_PART_INSTALL/usr/share/kservicetypes5 $HOME/.local/share
+        after:
+        - threadweaver
+    kdesignerplugin:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdesignerplugin/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kded
+    kemoticons:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kemoticons/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kdesignerplugin
+    kfilemetadata:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kfilemetadata/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kemoticons
+    knewstuff:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/knewstuff/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            cmake $SNAPCRAFT_PART_SRC -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
+            cmake --build . -- -j${SNAPCRAFT_PARALLEL_BUILD_COUNT}
+            cmake --build . --target install
+        after:
+        - kfilemetadata
+    kpty:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kpty/. $SNAPCRAFT_PART_SRC
+        after:
+        - knewstuff
+    plasma-framework:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/plasma-framework/. $SNAPCRAFT_PART_SRC
+        after:
+        - kpty
+    baloo:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/baloo/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            snapcraftctl build
+            # Correct baloo_file and baloo_file_extractor symlinks to be relative paths rather than absolute
+            rm -rf $SNAPCRAFT_PART_INSTALL/usr/bin/baloo_file
+            rm -rf $SNAPCRAFT_PART_INSTALL/usr/bin/baloo_file_extractor
+            ln -s ../lib/x86_64-linux-gnu/libexec/baloo_file $SNAPCRAFT_PART_INSTALL/usr/bin/baloo_file
+            ln -s ../lib/x86_64-linux-gnu/libexec/baloo_file_extractor $SNAPCRAFT_PART_INSTALL/usr/bin/baloo_file_extractor
+        after:
+        - plasma-framework
+    bluez-qt:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/bluez-qt/. $SNAPCRAFT_PART_SRC
+        after:
+        - baloo
+    frameworkintegration:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/frameworkintegration/. $SNAPCRAFT_PART_SRC
+        after:
+        - bluez-qt
+    kactivities-stats:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kactivities-stats/. $SNAPCRAFT_PART_SRC
+        after:
+        - frameworkintegration
+    kapidox:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kapidox/. $SNAPCRAFT_PART_SRC
+        after:
+        - kactivities-stats
+    kcalendarcore:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kcalendarcore/. $SNAPCRAFT_PART_SRC
+        after:
+        - kapidox
+    kcmutils:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kcmutils/. $SNAPCRAFT_PART_SRC
+        after:
+        - kcalendarcore
+    kcontacts:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kcontacts/. $SNAPCRAFT_PART_SRC
+        after:
+        - kcmutils
+    kdav:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdav/. $SNAPCRAFT_PART_SRC
+        after:
+        - kcontacts
+    kdelibs4support:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdelibs4support/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            snapcraftctl build
+            # Correct file permission on fileshareset, to 755 and remove sticky bit: -rwsr-xr-x
+            chmod 00755 $SNAPCRAFT_PART_INSTALL/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libexec/kf5/fileshareset
+        after:
+        - kdav
+    kdesu:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdesu/. $SNAPCRAFT_PART_SRC
+        override-build: |
+            snapcraftctl build
+            # Correct file permission on kdesud, to 755 and remove sticky bit: -rwxr-sr-x
+            # also correct ownership to root:root instead of root:nogroup
+            chmod 00755 $SNAPCRAFT_PART_INSTALL/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libexec/kf5/kdesud
+            chown root:root $SNAPCRAFT_PART_INSTALL/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libexec/kf5/kdesud
+        after:
+        - kdelibs4support
+    # kdewebkit:
+    #     source: https://invent.kde.org/frameworks/kdewebkit.git
+    #     source-tag: v5.85.0
+    #     plugin: cmake
+    #     cmake-generator: Ninja
+    #     cmake-parameters: 
+    #     - -DCMAKE_BUILD_TYPE=Release
+    #     - -DCMAKE_INSTALL_PREFIX=/usr
+    #     build-environment:
+    #     - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+    #     - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+    #     override-pull: |
+    #         cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdewebkit/. $SNAPCRAFT_PART_SRC
+    #     after:
+    #     - kdesu
+    kholidays:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kholidays/. $SNAPCRAFT_PART_SRC
+        after:
+        # - kdewebkit
+        - kdesu
+    khtml:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/khtml/. $SNAPCRAFT_PART_SRC
+        after:
+        - kholidays
+    kimageformats:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kimageformats/. $SNAPCRAFT_PART_SRC
+        after:
+        - khtml
+    kjsembed:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kjsembed/. $SNAPCRAFT_PART_SRC
+        after:
+        - kimageformats
+    kmediaplayer:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kmediaplayer/. $SNAPCRAFT_PART_SRC
+        after:
+        - kjsembed
+    knotifyconfig:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/knotifyconfig/. $SNAPCRAFT_PART_SRC
+        after:
+        - kmediaplayer
+    kpeople:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kpeople/. $SNAPCRAFT_PART_SRC
+        after:
+        - knotifyconfig
+    kplotting:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kplotting/. $SNAPCRAFT_PART_SRC
+        after:
+        - kpeople
+    kquickcharts:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kquickcharts/. $SNAPCRAFT_PART_SRC
+        after:
+        - kplotting
+    krunner:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/krunner/. $SNAPCRAFT_PART_SRC
+        after:
+        - kquickcharts
+    kxmlrpcclient:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kxmlrpcclient/. $SNAPCRAFT_PART_SRC
+        after:
+        - krunner
+    modemmanager-qt:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/modemmanager-qt/. $SNAPCRAFT_PART_SRC
+        after:
+        - kxmlrpcclient
+    networkmanager-qt:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/networkmanager-qt/. $SNAPCRAFT_PART_SRC
+        after:
+        - modemmanager-qt
+    prison:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/prison/. $SNAPCRAFT_PART_SRC
+        after:
+        - networkmanager-qt
+    purpose:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/purpose/. $SNAPCRAFT_PART_SRC
+        after:
+        - prison
+    qqc2-desktop-style:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/qqc2-desktop-style/. $SNAPCRAFT_PART_SRC
+        after:
+        - purpose
+    kdecoration:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/kdecoration/. $SNAPCRAFT_PART_SRC
+        after:
+        - qqc2-desktop-style
+    breeze:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/breeze/. $SNAPCRAFT_PART_SRC
+        after:
+        - kdecoration
+
+    plasma-integration:
+        cmake-parameters:
+        # - "-DKDE_INSTALL_USE_QT_SYS_PATHS=ON"
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DENABLE_TESTING=OFF
+        - -DBUILD_TESTING=OFF
+        - -DKDE_SKIP_TEST_SETTINGS=ON
+        plugin: cmake
+        # build-attributes:
+        # - enable-patchelf
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        - CMAKE_PREFIX_PATH: $CMAKE_PREFIX_PATH:$SNAPCRAFT_STAGE
+        - CMAKE_INCLUDE_PATH: $CMAKE_INCLUDE_PATH:$SNAPCRAFT_STAGE/include:$SNAPCRAFT_STAGE/usr/include
+        - CMAKE_LIBRARY_PATH: $CMAKE_LIBRARY_PATH:$SNAPCRAFT_STAGE/lib:$SNAPCRAFT_STAGE/usr/lib:$SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/plasma-integration/. $SNAPCRAFT_PART_SRC
+        # filesets:
+        #     exclusion:
+        #     - "-usr/lib/*/cmake/*"
+        #     - "-usr/lib/*/qt5/bin/moc"
+        #     - "-usr/lib/*/qt5/bin/qmake"
+        #     - "-usr/lib/*/qt5/bin/rcc"
+        #     - "-usr/lib/*/qt5/bin/*cpp*"
+        #     - "-usr/lib/qt5/bin/assistant"
+        #     - "-usr/lib/qt5/bin/designer"
+        #     - "-usr/lib/qt5/bin/lconvert"
+        #     - "-usr/lib/qt5/bin/linguist"
+        #     - "-usr/lib/qt5/bin/lupdate"
+        #     - "-usr/lib/qt5/bin/lrelease"
+        #     - "-usr/lib/qt5/bin/moc"
+        #     - "-usr/lib/qt5/bin/pixeltool"
+        #     - "-usr/lib/qt5/bin/qcollectiongenerator"
+        #     - "-usr/lib/qt5/bin/qdbuscpp2xml"
+        #     - "-usr/lib/qt5/bin/qdbusxml2cpp"
+        #     - "-usr/lib/qt5/bin/qdoc"
+        #     - "-usr/lib/qt5/bin/qhelpconverter"
+        #     - "-usr/lib/qt5/bin/qlalr"
+        #     - "-usr/lib/qt5/bin/qmake"
+        #     - "-usr/lib/qt5/bin/rcc"
+        #     - "-usr/lib/qt5/bin/syncqt.pl"
+        #     - "-usr/lib/vlc/plugins/gui/libqt4_plugin.so"
+        #     - "-usr/include/*"
+        #     - "-usr/share/ECM/*"
+        #     - "-usr/share/xml/docbook/*"
+        #     - "-usr/share/doc/*"
+        #     - "-usr/share/locale/*/LC_MESSAGES/vlc.mo"
+        #     - "-usr/share/man/*"
+        #     - "-usr/share/icons/breeze/*.rcc"
+        #     - "-usr/share/icons/breeze-dark/*.rcc"
+        #     - "-usr/share/wallpapers/*"
+        #     - "-usr/share/fonts/*"
+        #     - "-usr/share/pkgconfig"
+        #     - "-usr/lib/*/pkgconfig"
+        #     - "-usr/share/QtCurve"
+        #     - "-usr/share/kde4"
+        #     - "-usr/share/bug"
+        #     - "-usr/share/debhelper"
+        #     - "-usr/share/lintian"
+        #     - "-usr/share/menu"
+        #     - "-usr/bin/*vlc"
+        #     - "-usr/bin/dh_*"
+        #     - "-usr/lib/*/*.a"
+        #     - "-usr/lib/*/*.pri"
+        #     - "-usr/share/kf5/kdoctools/*"
+        #     - "-usr/bin/make"
+        # prime:
+        # - "$exclusion"
+        stage:
+        - "-usr/share/doc/*"
+        - "-usr/share/man/*"
+        - "-usr/share/icons/breeze/*.rcc"
+        - "-usr/share/wallpapers/*"
+        - "-usr/share/fonts/*"
+        after:
+        - breeze
+
+    libkdegames:
+        plugin: cmake
+        cmake-generator: Ninja
+        cmake-parameters: 
+        - -DCMAKE_BUILD_TYPE=Release
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        build-environment:
+        - LD_LIBRARY_PATH: $SNAPCRAFT_STAGE/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+        - PATH: $SNAPCRAFT_STAGE/usr/bin:$PATH
+        override-pull: |
+            cp -a $SNAPCRAFT_PART_SRC/../../sources/src/libkdegames/. $SNAPCRAFT_PART_SRC
+        after:
+        - plasma-integration
+
+    # Launchpad builders timeout internet access so fetching sources in advance
+    sources:
+        plugin: nil
+        override-pull: |
+            # Qt Sources
+            git clone --recurse-submodules -b v5.15.2 --depth=1 git://code.qt.io/qt/qtxmlpatterns.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtx11extras.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtgamepad.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtimageformats.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtnetworkauth.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtserialport.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtremoteobjects.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtsvg.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtscript.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtdeclarative.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtwayland.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qttools.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtconnectivity.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtcharts.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtdoc.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtlottie.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtgraphicaleffects.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtmultimedia.git
+            git clone --recurse-submodules -b v5.15.2 --depth=1 git://code.qt.io/qt/qtquick3d.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtscxml.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtquicktimeline.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtsensors.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtwebchannel.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtwebsockets.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qt3d.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtquickcontrols.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtquickcontrols2.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtlocation.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtdatavis3d.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtspeech.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtserialbus.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qttranslations.git
+            git clone -b v5.15.2 --depth=1 git://code.qt.io/qt/qtwebglplugin.git
+            git clone --recurse-submodules --shallow-submodules -b v5.15.2 --depth=1 git://code.qt.io/qt/qtwebengine.git
+            # git clone -b v5.212.0-alpha4 --depth=1 git://code.qt.io/qt/qtwebkit.git
+            # KDE/KF5 Sources
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/extra-cmake-modules.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kcoreaddons.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/ki18n.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/karchive.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kconfig.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdoctools.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kwidgetsaddons.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kcodecs.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kwindowsystem.git
+            git clone -b v0.114.0 --depth=1 https://invent.kde.org/libraries/polkit-qt-1.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kauth.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kcrash.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdbusaddons.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kguiaddons.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kconfigwidgets.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kitemviews.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kiconthemes.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kcompletion.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kservice.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/sonnet.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/attica.git
+            git clone -b v4.11.1 --depth=1 https://invent.kde.org/libraries/phonon.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/breeze-icons.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kglobalaccel.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/ktextwidgets.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/knotifications.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kxmlgui.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kbookmarks.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kjobwidgets.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kwallet.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/solid.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kio.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kparts.git
+            git clone -b v1.12 --depth=1 https://github.com/taglib/taglib.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kirigami.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kpackage.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kinit.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kactivities.git
+            git clone -b v1.3.0 --depth=1 https://invent.kde.org/libraries/plasma-wayland-protocols.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdeclarative.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kidletime.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kunitconversion.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/oxygen-icons5.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/syntax-highlighting.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdnssd.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kitemmodels.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kross.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kjs.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/ktexteditor.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kwayland.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/syndication.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/threadweaver.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kded.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdesignerplugin.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kemoticons.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kfilemetadata.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/knewstuff.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kpty.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/plasma-framework.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/baloo.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/bluez-qt.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/frameworkintegration.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kactivities-stats.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kapidox.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kcalendarcore.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kcmutils.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kcontacts.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdav.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdelibs4support.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdesu.git
+            # git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kdewebkit.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kholidays.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/khtml.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kimageformats.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kjsembed.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kmediaplayer.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/knotifyconfig.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kpeople.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kplotting.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kquickcharts.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/krunner.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/kxmlrpcclient.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/modemmanager-qt.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/networkmanager-qt.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/prison.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/purpose.git
+            git clone -b v$SNAPCRAFT_PROJECT_VERSION --depth=1 https://invent.kde.org/frameworks/qqc2-desktop-style.git
+            git clone -b v5.22.5 --depth=1 https://invent.kde.org/plasma/kdecoration.git
+            git clone -b v5.22.5 --depth=1 https://invent.kde.org/plasma/breeze.git
+            git clone -b v5.22.5 --depth=1 https://invent.kde.org/plasma/plasma-integration.git
+            git clone -b v21.08.1 --depth=1 https://invent.kde.org/games/libkdegames.git
+        build-packages:
+        # kdoctools
+        - docbook-xml
+        - docbook-xsl
+        # kwindowsystem
+        - libxcb-res0-dev
+        # polkit-qt-1
+        - libpolkit-gobject-1-dev
+        - libpolkit-agent-1-dev
+        # kactivities
+        - libboost-dev
+        # kfilemetadata
+        - xattr
+        - libattr1-dev
+        # baloo
+        - liblmdb-dev
+        # kapidox
+        - python3-setuptools
+        # kcalendarcore
+        - libical-dev
+        # khtml
+        - libgif-dev
+        # modemmanager-qt
+        - modemmanager-dev
+        # networkmanager-qt
+        - libnm-dev
+        # prison
+        - libqrencode-dev
+        - libdmtx-dev
+        # libkdegames
+        - libsndfile1-dev
+        stage-packages:
+        # kwindowsystem
+        - libxcb-res0
+        # polkit-qt-1
+        - libpolkit-agent-1-0
+        - libpolkit-gobject-1-0
+        # sonnet
+        - libhunspell-1.7-0
+        # phonon
+        - libpulse-mainloop-glib0
+        # knotifications
+        - libxtst6
+        # kfilemetadata
+        - libaom0
+        - libavcodec58
+        - libavformat58
+        - libavutil56
+        - libbluray2
+        - libchromaprint1
+        - libcodec2-0.9
+        - libgme0
+        - libgomp1
+        - libgsm1
+        - libmp3lame0
+        - libmpg123-0
+        - libnuma1
+        - libopenjp2-7
+        - libopenmpt0
+        - libshine3
+        - libsoxr0
+        - libspeex1
+        - libssh-gcrypt-4
+        - libswresample3
+        - libtheora0
+        - libtwolame0
+        - libva-drm2
+        - libva-x11-2
+        - libva2
+        - libvdpau1
+        - libvorbisfile3
+        - libwavpack1
+        - libx264-155
+        - libx265-179
+        - libxvidcore4
+        - libzvbi0
+        - ocl-icd-libopencl1
+        # plasma-framework
+        - libopengl0
+        # baloo
+        - liblmdb0
+        # kcalendarcore
+        - libical3
+        # khtml
+        - libgif7
+        # prison
+        - libdmtx0b
+        - libqrencode4
+        # libkdegames
+        - libsndfile1
