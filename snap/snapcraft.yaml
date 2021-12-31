@@ -453,7 +453,7 @@ parts:
             - --enable-chromaprint
             - --enable-frei0r
             - --enable-libx264
-            
+
     qtbase:
         plugin: nil
         override-pull: |
@@ -3343,3 +3343,8 @@ parts:
         - libqrencode4
         # libkdegames
         - libsndfile1
+        stage:
+        # remove ffmpeg libs as they come from ffmpeg part
+        - -usr/lib/x86_64-linux-gnu/libavcodec.so.58*
+        - -usr/lib/x86_64-linux-gnu/libavutil.so.56*
+        - -usr/lib/x86_64-linux-gnu/libswresample.so.3*
