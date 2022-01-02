@@ -3134,7 +3134,6 @@ parts:
         # qtimageformats
         - libmng2
         - libwebpdemux2
-        - libwebpmux3
         # qtmultimedia
         - libasyncns0
         - libflac8
@@ -3142,16 +3141,7 @@ parts:
         - libgstreamer-plugins-base1.0-0
         - libgstreamer1.0-0
         - libgudev-1.0-0
-        - libogg0
-        - libopenal1
         - liborc-0.4-0
-        - libpulse0
-        - libsndfile1
-        - libsndio7.0
-        - libvorbis0a
-        - libvorbisenc2
-        # qtspeech
-        - libflite1
         # qtwebengine
         - libxslt1.1
         # kwindowsystem
@@ -3171,34 +3161,13 @@ parts:
         # - libavformat58
         # - libavutil56
         # - libswresample3
-        - libbluray2
-        - libchromaprint1
-        - libcodec2-0.9
-        - libgme0
-        - libgomp1
-        - libgsm1
         - libmp3lame0
-        - libmpg123-0
-        - libnuma1
-        - libopenjp2-7
-        - libopenmpt0
-        - libshine3
-        - libsoxr0
-        - libspeex1
-        - libssh-gcrypt-4
-        - libtheora0
-        - libtwolame0
         - libva-drm2
         - libva-x11-2
         - libva2
         - libvdpau1
-        - libvorbisfile3
         - libwavpack1
         # - libx264-155
-        - libx265-179
-        - libxvidcore4
-        - libzvbi0
-        - ocl-icd-libopencl1
         # plasma-framework
         - libopengl0
         # baloo
@@ -3210,8 +3179,6 @@ parts:
         # prison
         - libdmtx0b
         - libqrencode4
-        # libkdegames
-        - libsndfile1
         # ffmpeg & dependencies
         - libasound2
         - libasyncns0
