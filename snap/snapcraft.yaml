@@ -3232,7 +3232,6 @@ parts:
         - libflac8
         - libflite1
         - libgdk-pixbuf2.0-0
-        - libgl1
         - libglvnd0
         - libglx0
         - libgme0
