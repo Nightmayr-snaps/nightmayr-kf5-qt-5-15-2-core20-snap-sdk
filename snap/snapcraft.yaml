@@ -48,6 +48,8 @@ parts:
 
     # ffmpeg and sdl2
     sdl2:
+        after:
+        - sources
         plugin: cmake
         cmake-generator: Ninja
         cmake-parameters:
@@ -80,6 +82,8 @@ parts:
             rsync -a --ignore-existing $SNAPCRAFT_PART_INSTALL/ /
 
     srt:
+        after:
+        - sources
         plugin: cmake
         cmake-parameters:
         - -DCMAKE_INSTALL_PREFIX=/usr
@@ -95,6 +99,8 @@ parts:
         - -usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pkgconfig
 
     x264:
+        after:
+        - sources
         plugin: autotools
         autotools-configure-parameters:
         - --prefix=/usr
@@ -110,6 +116,8 @@ parts:
         - -usr/lib/pkgconfig
 
     aom:
+        after:
+        - sources
         plugin: cmake
         cmake-parameters:
         - -DCMAKE_INSTALL_PREFIX=/usr
@@ -129,6 +137,8 @@ parts:
         - -usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pkgconfig
 
     dav1d:
+        after:
+        - sources
         plugin: meson
         meson-parameters:
         - --prefix=/usr
@@ -143,6 +153,8 @@ parts:
         - -usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pkgconfig
 
     zimg:
+        after:
+        - sources
         plugin: autotools
         autotools-configure-parameters:
         - --prefix=/usr
@@ -158,6 +170,8 @@ parts:
         - -usr/lib/pkgconfig
 
     ffnvcodec:
+        after:
+        - sources
         plugin: make
         make-parameters:
         - PREFIX=/usr
@@ -177,6 +191,7 @@ parts:
         - srt
         - zimg
         - sdl2
+        - sources
         plugin: autotools
         autotools-configure-parameters:
         - --prefix=/usr
