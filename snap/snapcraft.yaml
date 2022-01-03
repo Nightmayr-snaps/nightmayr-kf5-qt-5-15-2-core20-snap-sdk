@@ -3145,6 +3145,11 @@ parts:
         - libsasl2-2
         - libsybdb5
         - libwind0-heimdal
+        # qtconnectivity
+        - libbluetooth3
+        # qttools
+        - libclang1-6.0
+        - libllvm6.0
         # qtgamepad
         # - libsdl2-2.0-0
         # qtimageformats
