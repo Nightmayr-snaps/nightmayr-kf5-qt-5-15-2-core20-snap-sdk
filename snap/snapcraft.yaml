@@ -285,6 +285,7 @@ parts:
         --enable-libx264 ${EXTRA}
         make -j $(nproc)
         make DESTDIR="$SNAPCRAFT_PART_INSTALL" install
+
     qtbase:
         plugin: nil
         override-pull: |
@@ -3298,7 +3299,7 @@ parts:
         - libglu1-mesa
         - freeglut3
         - libxxhash0
-        - on-amd64:
+        - on amd64:
             - libmfx1
         stage:
         # remove ffmpeg libs as they come from ffmpeg part
