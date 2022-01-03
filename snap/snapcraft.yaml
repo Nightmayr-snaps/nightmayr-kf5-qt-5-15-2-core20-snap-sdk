@@ -139,6 +139,7 @@ parts:
     dav1d:
         after:
         - sources
+        source: . # not actual source, fetch real source in override-pull step
         plugin: meson
         meson-parameters:
         - --prefix=/usr
