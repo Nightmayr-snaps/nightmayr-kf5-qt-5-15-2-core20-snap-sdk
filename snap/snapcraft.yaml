@@ -3091,7 +3091,7 @@ parts:
         - tree
         - yasm
         - libxxhash-dev
-        - on amd64:
+        - try:
             - libmfx-dev
         stage-packages:
         # Qt
@@ -3299,7 +3299,7 @@ parts:
         - libglu1-mesa
         - freeglut3
         - libxxhash0
-        - on amd64:
+        - try:
             - libmfx1
         stage:
         # remove ffmpeg libs as they come from ffmpeg part
