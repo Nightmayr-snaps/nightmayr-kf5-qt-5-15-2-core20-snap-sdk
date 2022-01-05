@@ -3299,8 +3299,7 @@ parts:
         - libglu1-mesa
         - freeglut3
         - libxxhash0
-        - try:
-            - libmfx1
+        - to amd64: [libmfx1]
         stage:
         # remove ffmpeg libs as they come from ffmpeg part
         - -usr/lib/x86_64-linux-gnu/libavcodec.so.58*
