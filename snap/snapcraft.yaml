@@ -3091,7 +3091,7 @@ parts:
         - tree
         - yasm
         - libxxhash-dev
-        - try:
+        - on amd64:
             - libmfx-dev
         stage-packages:
         # Qt
@@ -3238,7 +3238,6 @@ parts:
         - libiec61883-0
         - libjack-jackd2-0
         - liblilv-0-0
-        - libmfx1
         - libmpg123-0
         - libmysofa1
         - libnorm1
@@ -3299,7 +3298,8 @@ parts:
         - libglu1-mesa
         - freeglut3
         - libxxhash0
-        - to amd64: [libmfx1]
+        - on amd64:
+            - libmfx1
         stage:
         # remove ffmpeg libs as they come from ffmpeg part
         - -usr/lib/x86_64-linux-gnu/libavcodec.so.58*
