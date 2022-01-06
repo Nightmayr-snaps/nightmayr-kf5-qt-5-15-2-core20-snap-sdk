@@ -3301,7 +3301,7 @@ parts:
             - libmfx1
         stage:
         # remove ffmpeg libs as they come from ffmpeg part
-        - -usr/lib/x86_64-linux-gnu/libavcodec.so.58*
-        - -usr/lib/x86_64-linux-gnu/libavutil.so.56*
-        - -usr/lib/x86_64-linux-gnu/libswresample.so.3*
+        - -usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libavcodec.so.58*
+        - -usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libavutil.so.56*
+        - -usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libswresample.so.3*
         
